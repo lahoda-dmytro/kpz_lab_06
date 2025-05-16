@@ -1,0 +1,16 @@
+﻿<Window x:Class="SudokuWPF.View.GameHistoryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Game History" Height="450" Width="800">
+    <Grid>
+        <ListView Name="GameHistoryListView">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Level" DisplayMemberBinding="{Binding Level}" Width="150"/>
+                    <GridViewColumn Header="Elapsed Time" DisplayMemberBinding="{Binding ElapsedTime}" Width="150"/>
+                    <GridViewColumn Header="Completion Time" DisplayMemberBinding="{Binding CompletionTime}" Width="250"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</Window>

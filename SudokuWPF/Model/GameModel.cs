@@ -98,6 +98,11 @@ namespace SudokuWPF.Model
             return null;
         }
 
+        internal CellClass[,] GetCells()
+        {
+            return _cells;
+        }
+
         private void InitClass(CellClass[,] cells)
         {
             if (cells != null) 

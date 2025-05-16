@@ -104,6 +104,7 @@
     <Compile Include="Model\Enums\DifficultyLevels.cs" />
     <Compile Include="Model\Enums\InputPadStateEnum.cs" />
     <Compile Include="Model\GameModel.cs" />
+    <Compile Include="Model\GameValidator.cs" />
     <Compile Include="Model\Structures\CellIndex.cs" />
     <Compile Include="Model\Structures\CellClass.cs" />
     <Compile Include="Model\Structures\NoteState.cs" />

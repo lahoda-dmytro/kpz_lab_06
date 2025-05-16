@@ -10,6 +10,8 @@
 - Збереження прогресу гри
 - Таймер та система очок
 - Статистика ігор
+- Збереження та завантаження ігор
+- Відстеження найкращих результатів
 
 ## Встановлення та запуск
 1. Клонуйте репозиторій
@@ -18,23 +20,29 @@
 4. Запустіть проект
 
 ## Programming Principles
-1. DRY (Don't Repeat Yourself)
-2. KISS (Keep It Simple, Stupid)
-3. SOLID принципи
-4. YAGNI (You Aren't Gonna Need It)
-5. Single Responsibility Principle
+1. DRY (Don't Repeat Yourself) - уникнення дублювання коду в класах GameSaveLoad та GameStatistics
+2. KISS (Keep It Simple, Stupid) - простий та зрозумілий інтерфейс для користувача
+3. SOLID принципи:
+   - Single Responsibility Principle - кожен клас має одну відповідальність
+   - Open/Closed Principle - можливість розширення функціоналу без модифікації існуючого коду
+   - Liskov Substitution Principle - правильне використання наслідування
+   - Interface Segregation Principle - розділення інтерфейсів на менші
+   - Dependency Inversion Principle - залежність від абстракцій
+4. YAGNI (You Aren't Gonna Need It) - реалізація тільки необхідного функціоналу
+5. Single Responsibility Principle - кожен клас відповідає за одну конкретну задачу
 
 ## Design Patterns
-1. Singleton - для управління станом гри
+1. Singleton - для управління станом гри (GameModel)
 2. Observer - для оновлення UI при зміні стану гри
 3. Factory - для створення різних типів ігрових полів
 4. Strategy - для різних алгоритмів перевірки правильності
+5. Repository - для роботи зі збереженням та завантаженням даних (GameSaveLoad)
 
 ## Refactoring Techniques
-1. Extract Method
-2. Replace Magic Numbers with Named Constants
-3. Introduce Parameter Object
-4. Replace Conditional with Polymorphism
-5. Extract Class
-6. Move Method
-7. Replace Inheritance with Delegation 
+1. Extract Method - виділення методів для збереження та завантаження гри
+2. Replace Magic Numbers with Named Constants - використання констант для налаштувань
+3. Introduce Parameter Object - створення класу GameState для збереження стану
+4. Replace Conditional with Polymorphism - використання поліморфізму для різних рівнів складності
+5. Extract Class - виділення класу GameStatistics для роботи зі статистикою
+6. Move Method - переміщення методів у відповідні класи
+7. Replace Inheritance with Delegation - використання делегування замість наслідування 

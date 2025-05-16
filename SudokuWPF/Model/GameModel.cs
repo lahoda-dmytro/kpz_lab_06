@@ -1,13 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using SudokuWPF.Model.Enums;
 using SudokuWPF.Model.Structures;
 using SudokuWPF.ViewModel;
 
 namespace SudokuWPF.Model
 {
-    internal class GameModel
+    public class GameModel
     {
+        private readonly CellClass[,] _cells;
+        private readonly List<CellClass> _cellList;
+        private readonly List<CellClass>[] _regionList;
+        private readonly GameValidator _validator;
+        private readonly GameSaveLoad _saveLoad;
+        private readonly GameStatistics _statistics;
+
+        public GameModel(int[,] puzzle)
+        {
+            _cells = new CellClass[9, 9];
+            _cellList = new List<CellClass>();
+            _regionList = new List<CellClass>[9];
+            _validator = new GameValidator(_cells, _cellList, _regionList);
+            _saveLoad = new GameSaveLoad();
+            _statistics = new GameStatistics();
+
+            InitializeCells();
+            if (puzzle != null)
+                LoadPuzzle(puzzle);
+        }
+
         private readonly GameValidator _validator;
 
         internal GameModel(CellClass[,] cells)
@@ -197,5 +222,60 @@ namespace SudokuWPF.Model
         {
             return _validator.GetHint();
         }
+
+        public async Task SaveGameAsync()
+        {
+            var gameState = new GameState
+            {
+                Cells = _cells,
+                SaveDate = DateTime.Now,
+                Difficulty = GameLevel
+            };
+
+            await _saveLoad.SaveGameAsync(gameState);
+        }
+
+        public async Task<List<SavedGame>> GetSavedGamesAsync()
+        {
+            return await _saveLoad.GetSavedGamesAsync();
+        }
+
+        public async Task LoadGameAsync(string fileName)
+        {
+            var gameState = await _saveLoad.LoadGameAsync(fileName);
+            LoadPuzzle(gameState.Cells);
+        }
+
+        public GameStats GetStatistics()
+        {
+            return _statistics.GetStats();
+        }
+
+        private void LoadPuzzle(CellClass[,] cells)
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    _cells[i, j] = cells[i, j];
+                }
+            }
+        }
+    }
+
+    public class GameState
+    {
+        public CellClass[,] Cells { get; set; }
+        public DateTime SaveDate { get; set; }
+        public DifficultyLevels Difficulty { get; set; }
+    }
+
+    public class GameStats
+    {
+        public int TotalGames { get; set; }
+        public int CompletedGames { get; set; }
+        public TimeSpan BestTimeEasy { get; set; }
+        public TimeSpan BestTimeMedium { get; set; }
+        public TimeSpan BestTimeHard { get; set; }
     }
 }

@@ -8,12 +8,13 @@ namespace SudokuWPF.Model
 {
     internal class GameModel
     {
-       
+        private readonly GameValidator _validator;
+
         internal GameModel(CellClass[,] cells)
         {
             InitClass(cells); 
+            _validator = new GameValidator(this);
         }
-
 
         private CellClass[,] _cells; 
         private List<CellClass>[] _regionList; 
@@ -177,6 +178,24 @@ namespace SudokuWPF.Model
                     EmptyCount++; 
         }
 
-       
+        public bool ValidateCell(int col, int row)
+        {
+            return _validator.ValidateCell(col, row);
+        }
+
+        public List<CellClass> GetConflictingCells()
+        {
+            return _validator.GetConflictingCells();
+        }
+
+        public bool IsGameValid()
+        {
+            return _validator.IsGameValid();
+        }
+
+        public List<CellClass> GetHint()
+        {
+            return _validator.GetHint();
+        }
     }
 }

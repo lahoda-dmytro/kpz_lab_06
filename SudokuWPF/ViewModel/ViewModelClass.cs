@@ -14,21 +14,23 @@ using SudokuWPF.ViewModel.GameGenerator;
 using System.IO;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Input;
 
 namespace SudokuWPF.ViewModel
 {
     public class ViewModelClass : INotifyPropertyChanged
     {
-       
         private ViewModelClass()
         {
+            HintCommand = new RelayCommand(ExecuteHint);
+            SaveGameCommand = new RelayCommand(ExecuteSaveGame);
+            LoadGameCommand = new RelayCommand(ExecuteLoadGame);
+            ShowStatsCommand = new RelayCommand(ExecuteShowStats);
         }
-
-     
 
         private static readonly object _lock = new object();
         private static ViewModelClass _instance;
-
 
         private GameTimer _timer;
         private GamesManager _games;
@@ -44,11 +46,7 @@ namespace SudokuWPF.ViewModel
         private bool _isShowNotes;
         private string _gameTimeElapsed;
 
-
         public event PropertyChangedEventHandler PropertyChanged;
-
-
-
 
         public string ElapsedTime
         {
@@ -144,7 +142,6 @@ namespace SudokuWPF.ViewModel
                 OnPropertyChanged();
             }
         }
-
 
         #region
         public CellClass Cell00 => _model[0, 0];
@@ -325,7 +322,6 @@ namespace SudokuWPF.ViewModel
 
         #endregion
 
-
         public DifficultyLevels GameLevel
         {
             get { return _gameLevel; }
@@ -344,7 +340,6 @@ namespace SudokuWPF.ViewModel
         {
             MessageBox.Show(message, "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
         }
-
 
         public bool IsEnterNotes
         {
@@ -406,7 +401,6 @@ namespace SudokuWPF.ViewModel
         
 
         private bool GameInProgress { get; set; }
-
 
         private void GameTimerEventHandler(object sender, GameTimerEventArgs e)
         {
@@ -864,9 +858,83 @@ namespace SudokuWPF.ViewModel
             }
         }
 
+        public ICommand HintCommand { get; private set; }
+        public ICommand SaveGameCommand { get; private set; }
+        public ICommand LoadGameCommand { get; private set; }
+        public ICommand ShowStatsCommand { get; private set; }
 
+        private void ExecuteHint()
+        {
+            var hint = _model.GetHint();
+            if (hint != null && hint.Any())
+            {
+                var cell = hint.First();
+                MessageBox.Show($"Підказка: спробуйте значення {cell.Notes.Select((n, i) => new { Value = i + 1, IsPossible = n.State }).Where(n => n.IsPossible).Select(n => n.Value).FirstOrDefault()} в клітинці ({cell.Col + 1}, {cell.Row + 1})");
+            }
+            else
+            {
+                MessageBox.Show("На жаль, підказок немає");
+            }
+        }
 
+        private async void ExecuteSaveGame()
+        {
+            try
+            {
+                await _model.SaveGameAsync();
+                MessageBox.Show("Гру успішно збережено!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при збереженні гри: {ex.Message}");
+            }
+        }
+
+        private async void ExecuteLoadGame()
+        {
+            try
+            {
+                var savedGames = await _model.GetSavedGamesAsync();
+                if (!savedGames.Any())
+                {
+                    MessageBox.Show("Немає збережених ігор");
+                    return;
+                }
+
+                var gameList = new List<string>();
+                foreach (var game in savedGames)
+                {
+                    gameList.Add($"Гра від {game.SaveDate:dd.MM.yyyy HH:mm} - {game.Difficulty}");
+                }
+
+                var result = MessageBox.Show(
+                    "Збережені ігри:\n" + string.Join("\n", gameList) + "\n\nЗавантажити останню гру?",
+                    "Завантаження гри",
+                    MessageBoxButton.YesNo);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    await _model.LoadGameAsync(savedGames.First().FileName);
+                    MessageBox.Show("Гру успішно завантажено!");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при завантаженні гри: {ex.Message}");
+            }
+        }
+
+        private void ExecuteShowStats()
+        {
+            var stats = _model.GetStatistics();
+            var message = $"Статистика гри:\n\n" +
+                         $"Всього ігор: {stats.TotalGames}\n" +
+                         $"Завершено: {stats.CompletedGames}\n" +
+                         $"Найкращий час (Легкий): {stats.BestTimeEasy:hh\\:mm\\:ss}\n" +
+                         $"Найкращий час (Середній): {stats.BestTimeMedium:hh\\:mm\\:ss}\n" +
+                         $"Найкращий час (Важкий): {stats.BestTimeHard:hh\\:mm\\:ss}";
+
+            MessageBox.Show(message, "Статистика");
+        }
     }
-
-   
 }

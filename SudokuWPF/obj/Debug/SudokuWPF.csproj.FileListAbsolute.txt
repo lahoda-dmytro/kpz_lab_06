@@ -84,3 +84,17 @@ D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\App.g.cs
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\GeneratedInternalTypeHelper.g.cs
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\SudokuWPF_MarkupCompile.cache
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\SudokuWPF_MarkupCompile.lref
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\bin\Debug\SudokuWPF.exe.config
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\bin\Debug\SudokuWPF.exe
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\bin\Debug\SudokuWPF.pdb
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\bin\Debug\Newtonsoft.Json.dll
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\bin\Debug\Newtonsoft.Json.xml
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\GameComplete.baml
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\MainWindow.baml
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\SudokuWPF.g.resources
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\SudokuWPF.Properties.Resources.resources
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\SudokuWPF.csproj.GenerateResource.cache
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\SudokuWPF.csproj.CoreCompileInputs.cache
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\SudokuWPF.csproj.Up2Date
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\SudokuWPF.exe
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\SudokuWPF.pdb

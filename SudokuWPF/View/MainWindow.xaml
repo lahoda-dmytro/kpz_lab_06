@@ -338,7 +338,22 @@
           Content="Підказки" Canvas.Left="430" Canvas.Top="308" />
         <TextBlock Text="{Binding Path=ErrorMessage}" Foreground="Red" Canvas.Left="430" Canvas.Top="334" />
 
-
+        <Button Style="{StaticResource EnableGameButtonStyle}"
+                Content="Підказка"
+                Command="{Binding HintCommand}"
+                Margin="10,10,0,0" />
+        <Button Style="{StaticResource EnableGameButtonStyle}"
+                Content="Зберегти гру"
+                Command="{Binding SaveGameCommand}"
+                Margin="10,10,0,0" />
+        <Button Style="{StaticResource EnableGameButtonStyle}"
+                Content="Завантажити гру"
+                Command="{Binding LoadGameCommand}"
+                Margin="10,10,0,0" />
+        <Button Style="{StaticResource EnableGameButtonStyle}"
+                Content="Статистика"
+                Command="{Binding ShowStatsCommand}"
+                Margin="10,10,0,0" />
 
         <Grid Style="{StaticResource GameGridStyle}">
             <Grid.ColumnDefinitions>

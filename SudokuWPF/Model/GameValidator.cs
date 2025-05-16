@@ -7,19 +7,23 @@ namespace SudokuWPF.Model
 {
     public class GameValidator
     {
-        private readonly GameModel _gameModel;
         private readonly List<CellClass> _conflictingCells;
+        private readonly CellClass[,] _cells;
+        private readonly List<CellClass> _cellList;
+        private readonly List<CellClass>[] _regionList;
 
-        public GameValidator(GameModel gameModel)
+        public GameValidator(CellClass[,] cells, List<CellClass> cellList, List<CellClass>[] regionList)
         {
-            _gameModel = gameModel;
+            _cells = cells;
+            _cellList = cellList;
+            _regionList = regionList;
             _conflictingCells = new List<CellClass>();
         }
 
         public bool ValidateCell(int col, int row)
         {
             _conflictingCells.Clear();
-            var cell = _gameModel[col, row];
+            var cell = _cells[col, row];
             if (cell == null || cell.CellState == CellStateEnum.Answer) return true;
 
             var value = cell.UserAnswer;
@@ -28,24 +32,24 @@ namespace SudokuWPF.Model
             // Перевірка рядка
             for (int i = 0; i < 9; i++)
             {
-                if (i != col && _gameModel[i, row]?.UserAnswer == value)
+                if (i != col && _cells[i, row]?.UserAnswer == value)
                 {
-                    _conflictingCells.Add(_gameModel[i, row]);
+                    _conflictingCells.Add(_cells[i, row]);
                 }
             }
 
             // Перевірка стовпця
             for (int i = 0; i < 9; i++)
             {
-                if (i != row && _gameModel[col, i]?.UserAnswer == value)
+                if (i != row && _cells[col, i]?.UserAnswer == value)
                 {
-                    _conflictingCells.Add(_gameModel[col, i]);
+                    _conflictingCells.Add(_cells[col, i]);
                 }
             }
 
             // Перевірка квадрата 3x3
             var region = cell.Region;
-            var regionCells = _gameModel.RegionCells(region);
+            var regionCells = _regionList[region];
             foreach (var regionCell in regionCells)
             {
                 if (regionCell != cell && regionCell.UserAnswer == value)
@@ -79,7 +83,7 @@ namespace SudokuWPF.Model
 
         public List<CellClass> GetHint()
         {
-            var emptyCells = _gameModel.CellList
+            var emptyCells = _cellList
                 .Where(c => c.CellState == CellStateEnum.Blank)
                 .ToList();
 

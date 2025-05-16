@@ -13,7 +13,7 @@ namespace SudokuWPF.Model
         internal GameModel(CellClass[,] cells)
         {
             InitClass(cells); 
-            _validator = new GameValidator(this);
+            _validator = new GameValidator(_cells, CellList, _regionList);
         }
 
         private CellClass[,] _cells; 

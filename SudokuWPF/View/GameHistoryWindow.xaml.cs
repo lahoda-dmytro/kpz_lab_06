@@ -11,11 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Collections.Generic;
 using System.IO;
-using Newtonsoft.Json;
-using SudokuWPF.ViewModel;
-using System.Windows;
 using Newtonsoft.Json;
 using SudokuWPF.ViewModel;
 
@@ -29,8 +25,6 @@ namespace SudokuWPF.View
         public GameHistoryWindow()
         {
             InitializeComponent();
-
         }
-
     }
 }

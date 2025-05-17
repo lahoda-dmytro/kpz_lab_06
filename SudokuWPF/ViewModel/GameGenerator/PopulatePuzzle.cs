@@ -32,6 +32,8 @@ namespace SudokuWPF.ViewModel.GameGenerator
                 }
                 System.Diagnostics.Debug.WriteLine(line);
             }
+            // Викликаємо SyncUserAnswers після маскування
+            SyncUserAnswers(grid);
             return grid;
         }
 
@@ -145,17 +147,33 @@ namespace SudokuWPF.ViewModel.GameGenerator
                 {
                     cells[col, row] = new CellClass(col, row);
                     cells[col, row].Answer = _cells[i].Answer;
-                    cells[col, row].UserAnswer = _cells[i].Answer;
-                    cells[col, row].CellState = CellStateEnum.Answer;
+                    cells[col, row].CellState = _cells[i].CellState;
                 }
                 else
                 {
                     cells[col, row] = new CellClass(col, row);
                     cells[col, row].CellState = CellStateEnum.Blank;
-                    cells[col, row].UserAnswer = 0;
                 }
+                // Встановлюємо UserAnswer відповідно до CellState
+                if (cells[col, row].CellState == CellStateEnum.Answer)
+                    cells[col, row].UserAnswer = cells[col, row].Answer;
+                else
+                    cells[col, row].UserAnswer = 0;
             }
             return cells;
+        }
+
+        // Нова функція для синхронізації UserAnswer з CellState
+        private void SyncUserAnswers(CellClass[,] cells)
+        {
+            for (int col = 0; col < 9; col++)
+                for (int row = 0; row < 9; row++)
+                {
+                    if (cells[col, row].CellState == CellStateEnum.Answer)
+                        cells[col, row].UserAnswer = cells[col, row].Answer;
+                    else
+                        cells[col, row].UserAnswer = 0;
+                }
         }
 
       

@@ -198,37 +198,41 @@
         <converters:NoteStateToTextConverter x:Key="NoteStateToTextConverter"/>
         <converters:UserAnswerToTextConverter x:Key="UserAnswerToTextConverter"/>
 
-        <DataTemplate x:Key="CellDataTemplate">
-            <Grid>
-                <TextBlock Style="{StaticResource CellStyle}"
-                         Text="{Binding UserAnswer, Converter={StaticResource UserAnswerToTextConverter}}"
-                         Visibility="{Binding CellState, Converter={StaticResource CellStateToVisibilityConverter}}"/>
-                <ItemsControl ItemsSource="{Binding Notes}"
-                            Visibility="{Binding CellState, Converter={StaticResource NotesVisibilityConverter}}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                            </Grid>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Style="{StaticResource NoteCellStyle}"
-                                     Text="{Binding Converter={StaticResource NoteStateToTextConverter}}"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+        <DataTemplate x:Key="CellDataTemplate" DataType="{x:Type srcMS:CellClass}">
+            <Grid x:Name="CellGrid" Margin="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="Cell" Style="{StaticResource CellStyle}" />
             </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Path=CellState}" Value="Answer">
+                    <Setter Property="Text" Value="{Binding Path=Answer, Mode=OneWay}" TargetName="Cell" />
+                    <Setter Property="IsEnabled" Value="False" TargetName="Cell" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=CellState}" Value="Hint">
+                    <Setter Property="Text" Value="{Binding Path=Answer, Mode=OneWay}" TargetName="Cell" />
+                    <Setter Property="Foreground" Value="BlueViolet" TargetName="Cell" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=CellState}" Value="Blank">
+                    <Setter Property="Text" Value=" " TargetName="Cell" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=CellState}" Value="UserInputCorrect">
+                    <Setter Property="Text" Value="{Binding Path=UserAnswer, Mode=OneWay}" TargetName="Cell" />
+                    <Setter Property="Foreground" Value="DarkGreen" TargetName="Cell" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=CellState}" Value="UserInputIncorrect">
+                    <Setter Property="Text" Value="{Binding Path=UserAnswer, Mode=OneWay}" TargetName="Cell" />
+                    <Setter Property="Foreground" Value="DarkRed" TargetName="Cell" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
     </Window.Resources>
@@ -328,6 +332,9 @@
                 <Rectangle Style="{StaticResource HorizontalBars}" Grid.Row="2" />
                 <Rectangle Style="{StaticResource VerticalBars}" Grid.Column="1" />
                 <Rectangle Style="{StaticResource VerticalBars}" Grid.Column="2" />
+                <ContentControl Content="{Binding Path=Cell00, Mode=OneWay}"
+                                ContentTemplate="{StaticResource CellDataTemplate}" Grid.Column="0" Grid.Row="0"
+                                MouseLeftButtonDown="A0_MouseLeftButtonDown" />     
                 <ContentControl Content="{Binding Path=Cell10, Mode=OneWay}"
                                 ContentTemplate="{StaticResource CellDataTemplate}" Grid.Column="1" Grid.Row="0"
                                 MouseLeftButtonDown="B0_MouseLeftButtonDown" />

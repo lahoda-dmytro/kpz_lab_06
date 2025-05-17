@@ -544,6 +544,24 @@ namespace SudokuWPF.ViewModel
                     Debug.WriteLine("LoadNewGame: Cells are not null, creating new model");
                     // Створюємо нову модель з отриманими клітинками
                     _model = new GameModel(cells);
+
+                    // Додаю детальне логування стану сітки
+                    Debug.WriteLine("=== DEBUG: Стан сітки після створення GameModel ===");
+                    for (int row = 0; row < 9; row++)
+                    {
+                        string lineA = "A: ", lineU = "U: ", lineS = "S: ";
+                        for (int col = 0; col < 9; col++)
+                        {
+                            var c = _model[col, row];
+                            lineA += c.Answer + " ";
+                            lineU += c.UserAnswer + " ";
+                            lineS += c.CellState + " ";
+                        }
+                        Debug.WriteLine(lineA);
+                        Debug.WriteLine(lineU);
+                        Debug.WriteLine(lineS);
+                    }
+                    Debug.WriteLine("=== END DEBUG ===");
                     
                     StartButtonState = StartButtonStateEnum.Start;
                     StatusMessage = "Готово до початку гри";
@@ -675,8 +693,29 @@ namespace SudokuWPF.ViewModel
 
         private void ProcessCellClick(int col, int row)
         {
-            if (IsValidGame() && (_model[row, col].CellState != CellStateEnum.Answer))       
-                ProcessNumberPad(col, row, _view.ShowNumberPad()); 
+            Debug.WriteLine($"UI click: [{col},{row}] CellState={_model[col, row].CellState} UserAnswer={_model[col, row].UserAnswer} Answer={_model[col, row].Answer}");
+            Debug.WriteLine($"Click: [{col},{row}] state={_model[col, row].CellState}");
+            
+            if (!IsValidGame())
+            {
+                Debug.WriteLine("Game is not valid");
+                return;
+            }
+
+            if (_model[col, row].CellState == CellStateEnum.Answer)
+            {
+                Debug.WriteLine("Cell is already an answer");
+                return;
+            }
+
+            var inputPadState = _view.ShowNumberPad();
+            Debug.WriteLine($"Number pad returned: {inputPadState}");
+            
+            if (inputPadState != InputPadStateEnum.InvalidState)
+            {
+                ProcessNumberPad(col, row, inputPadState);
+                OnPropertyChanged($"Cell{col}{row}");
+            }
         }
 
         private void ProcessNumberPad(int col, int row, InputPadStateEnum value)
@@ -785,10 +824,11 @@ namespace SudokuWPF.ViewModel
         private void ProcessAnswer(int col, int row, int value)
         {
             _model[col, row].UserAnswer = value;
-            if (_model[col, row].CellState == CellStateEnum.UserInputCorrect) 
+            Debug.WriteLine($"ProcessAnswer: [{col},{row}] -> UserAnswer={_model[col, row].UserAnswer}, CellState={_model[col, row].CellState}, Answer={_model[col, row].Answer}");
+            if (_model[col, row].CellState == CellStateEnum.UserInputCorrect)
             {
-                ScanNotes(col, row, value); 
-                UpdateEmptyCount(-1); 
+                ScanNotes(col, row, value);
+                UpdateEmptyCount(-1);
             }
         }
 
@@ -939,6 +979,7 @@ namespace SudokuWPF.ViewModel
             GameLevel = gameState.Difficulty;
             ShowBoard();
             StartGame();
+            UpdateAllCells(); // Оновлюємо всі властивості після завантаження
         }
 
         public List<CellClass> CellList => _model?.CellList;

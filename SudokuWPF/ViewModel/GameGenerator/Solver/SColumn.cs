@@ -2,15 +2,12 @@
 {
     internal class SColumn : SNode
     {
-     
         internal SColumn(int col)
             : base(0, col)
         {
         }
 
         internal int Rows { get; private set; }
-
-       
 
         internal void IncRows()
         {
@@ -36,7 +33,5 @@
         {
             return $"{base.ToString()}, rows {Rows}";
         }
-
-       
     }
 }

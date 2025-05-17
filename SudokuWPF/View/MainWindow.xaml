@@ -6,7 +6,14 @@
         xmlns:srcVME="clr-namespace:SudokuWPF.ViewModel.Enums"
         xmlns:srcME="clr-namespace:SudokuWPF.Model.Enums"
         xmlns:srcMS="clr-namespace:SudokuWPF.Model.Structures"
-        Title="Sudoku Game"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SudokuWPF.View"
+        xmlns:model="clr-namespace:SudokuWPF.Model"
+        xmlns:enums="clr-namespace:SudokuWPF.Model.Enums"
+        xmlns:converters="clr-namespace:SudokuWPF.ViewModel.Converters"
+        mc:Ignorable="d"
+        Title="Sudoku" Height="450" Width="800"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
@@ -86,8 +93,8 @@
         </Style>
 
         <ObjectDataProvider x:Key="GameLevels"
-                            ObjectType="{x:Type sys:Enum}"
-                            MethodName="GetValues">
+                          ObjectType="{x:Type sys:Enum}"
+                          MethodName="GetValues">
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="srcME:DifficultyLevels" />
             </ObjectDataProvider.MethodParameters>
@@ -186,102 +193,42 @@
             </Style.Triggers>
         </Style>
 
-        <DataTemplate x:Key="CellDataTemplate"
-                      DataType="{x:Type srcMS:CellClass}">
-            <Grid x:Name="CellGrid"
-                  Margin="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <TextBlock x:Name="Cell"
-                           Style="{StaticResource CellStyle}" />
-                <TextBlock x:Name="Note1"
-                           Text="{Binding Path=Notes[0].Value, Mode=OneWay}"
-                           Style="{StaticResource NoteCellStyle}"
-                           Grid.Column="0"
-                           Grid.Row="0" />
-                <TextBlock x:Name="Note2"
-                           Text="{Binding Path=Notes[1].Value, Mode=OneWay}"
-                           Style="{StaticResource NoteCellStyle}"
-                           Grid.Column="1"
-                           Grid.Row="0" />
-                <TextBlock x:Name="Note3"
-                           Text="{Binding Path=Notes[2].Value, Mode=OneWay}"
-                           Style="{StaticResource NoteCellStyle}"
-                           Grid.Column="2"
-                           Grid.Row="0" />
-                <TextBlock x:Name="Note4"
-                           Text="{Binding Path=Notes[3].Value, Mode=OneWay}"
-                           Style="{StaticResource NoteCellStyle}"
-                           Grid.Column="0"
-                           Grid.Row="1" />
-                <TextBlock x:Name="Note5"
-                           Text="{Binding Path=Notes[4].Value, Mode=OneWay}"
-                           Style="{StaticResource NoteCellStyle}"
-                           Grid.Column="1"
-                           Grid.Row="1" />
-                <TextBlock x:Name="Note6"
-                           Text="{Binding Path=Notes[5].Value, Mode=OneWay}"
-                           Style="{StaticResource NoteCellStyle}"
-                           Grid.Column="2"
-                           Grid.Row="1" />
-                <TextBlock x:Name="Note7"
-                           Text="{Binding Path=Notes[6].Value, Mode=OneWay}"
-                           Style="{StaticResource NoteCellStyle}"
-                           Grid.Column="0"
-                           Grid.Row="2" />
-                <TextBlock x:Name="Note8"
-                           Text="{Binding Path=Notes[7].Value, Mode=OneWay}"
-                           Style="{StaticResource NoteCellStyle}"
-                           Grid.Column="1"
-                           Grid.Row="2" />
-                <TextBlock x:Name="Note9"
-                           Text="{Binding Path=Notes[8].Value, Mode=OneWay}"
-                           Style="{StaticResource NoteCellStyle}"
-                           Grid.Column="2"
-                           Grid.Row="2" />
+        <converters:CellStateToVisibilityConverter x:Key="CellStateToVisibilityConverter"/>
+        <converters:NotesVisibilityConverter x:Key="NotesVisibilityConverter"/>
+        <converters:NoteStateToTextConverter x:Key="NoteStateToTextConverter"/>
+        <converters:UserAnswerToTextConverter x:Key="UserAnswerToTextConverter"/>
+
+        <DataTemplate x:Key="CellDataTemplate">
+            <Grid>
+                <TextBlock Style="{StaticResource CellStyle}"
+                         Text="{Binding UserAnswer, Converter={StaticResource UserAnswerToTextConverter}}"
+                         Visibility="{Binding CellState, Converter={StaticResource CellStateToVisibilityConverter}}"/>
+                <ItemsControl ItemsSource="{Binding Notes}"
+                            Visibility="{Binding CellState, Converter={StaticResource NotesVisibilityConverter}}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                            </Grid>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Style="{StaticResource NoteCellStyle}"
+                                     Text="{Binding Converter={StaticResource NoteStateToTextConverter}}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </Grid>
-            <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding Path=CellState}" Value="Answer">
-                    <Setter Property="Text" Value="{Binding Path=Answer, Mode=OneWay}" TargetName="Cell" />
-                    <Setter Property="IsEnabled" Value="False" TargetName="Cell" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=CellState}" Value="Hint">
-                    <Setter Property="Text" Value="{Binding Path=Answer, Mode=OneWay}" TargetName="Cell" />
-                    <Setter Property="Foreground" Value="BlueViolet" TargetName="Cell" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=CellState}" Value="Blank">
-                    <Setter Property="Text" Value=" " TargetName="Cell" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=CellState}" Value="UserInputCorrect">
-                    <Setter Property="Text" Value="{Binding Path=UserAnswer, Mode=OneWay}" TargetName="Cell" />
-                    <Setter Property="Foreground" Value="DarkGreen" TargetName="Cell" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=CellState}" Value="UserInputIncorrect">
-                    <Setter Property="Text" Value="{Binding Path=UserAnswer, Mode=OneWay}" TargetName="Cell" />
-                    <Setter Property="Foreground" Value="DarkRed" TargetName="Cell" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=CellState}" Value="Notes">
-                    <Setter Property="Margin" Value="5" TargetName="CellGrid" />
-                    <Setter Property="Visibility" Value="Hidden" TargetName="Cell" />
-                    <Setter Property="Visibility" Value="Visible" TargetName="Note1" />
-                    <Setter Property="Visibility" Value="Visible" TargetName="Note2" />
-                    <Setter Property="Visibility" Value="Visible" TargetName="Note3" />
-                    <Setter Property="Visibility" Value="Visible" TargetName="Note4" />
-                    <Setter Property="Visibility" Value="Visible" TargetName="Note5" />
-                    <Setter Property="Visibility" Value="Visible" TargetName="Note6" />
-                    <Setter Property="Visibility" Value="Visible" TargetName="Note7" />
-                    <Setter Property="Visibility" Value="Visible" TargetName="Note8" />
-                    <Setter Property="Visibility" Value="Visible" TargetName="Note9" />
-                </DataTrigger>
-            </DataTemplate.Triggers>
         </DataTemplate>
 
     </Window.Resources>
@@ -340,20 +287,16 @@
 
         <Button Style="{StaticResource EnableGameButtonStyle}"
                 Content="Підказка"
-                Command="{Binding HintCommand}"
-                Margin="10,10,0,0" />
+                Command="{Binding HintCommand}" Canvas.Left="430" Canvas.Top="334" />
         <Button Style="{StaticResource EnableGameButtonStyle}"
                 Content="Зберегти гру"
-                Command="{Binding SaveGameCommand}"
-                Margin="10,10,0,0" />
+                Command="{Binding SaveGameCommand}" Canvas.Left="430" Canvas.Top="226" />
         <Button Style="{StaticResource EnableGameButtonStyle}"
                 Content="Завантажити гру"
-                Command="{Binding LoadGameCommand}"
-                Margin="10,10,0,0" />
+                Command="{Binding LoadGameCommand}" Canvas.Left="430" Canvas.Top="299" VerticalAlignment="Center" />
         <Button Style="{StaticResource EnableGameButtonStyle}"
                 Content="Статистика"
-                Command="{Binding ShowStatsCommand}"
-                Margin="10,10,0,0" />
+                Command="{Binding ShowStatsCommand}" Canvas.Left="430" Canvas.Top="261" />
 
         <Grid Style="{StaticResource GameGridStyle}">
             <Grid.ColumnDefinitions>
@@ -377,7 +320,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
-                    <RowDefinition />
+                    <RowDefinition Height="44.667" />
                 </Grid.RowDefinitions>
 
                 <Border Style="{StaticResource MiniBorderBlueStyle}" />
@@ -385,10 +328,6 @@
                 <Rectangle Style="{StaticResource HorizontalBars}" Grid.Row="2" />
                 <Rectangle Style="{StaticResource VerticalBars}" Grid.Column="1" />
                 <Rectangle Style="{StaticResource VerticalBars}" Grid.Column="2" />
-
-                <ContentControl Content="{Binding Path=Cell00, Mode=OneWay}"
-                                ContentTemplate="{StaticResource CellDataTemplate}" Grid.Column="0" Grid.Row="0"
-                                MouseLeftButtonDown="A0_MouseLeftButtonDown" />
                 <ContentControl Content="{Binding Path=Cell10, Mode=OneWay}"
                                 ContentTemplate="{StaticResource CellDataTemplate}" Grid.Column="1" Grid.Row="0"
                                 MouseLeftButtonDown="B0_MouseLeftButtonDown" />

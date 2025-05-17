@@ -1,101 +1,30 @@
-﻿using SudokuWPF.ViewModel;
-
 namespace SudokuWPF.Model.Structures
 {
     public class CellIndex
     {
-        internal CellIndex(int col, int row)
+        public int Column { get; }
+        public int Row { get; }
+        public int Region => (Column / 3) + (Row / 3) * 3;
+
+        public CellIndex(int column, int row)
         {
-            if (Common.IsValidIndex(col, row)) 
-            {
-                Column = col; 
-                Row = row;
-                Region = SetRegion(col, row); 
-            }
+            Column = column;
+            Row = row;
         }
 
-        internal CellIndex(int index)
+        public bool IsSameRow(CellIndex other)
         {
-            if ((0 <= index) && (index <= 80))
-            {
-                
-                index++;
-                Column = ComputeColumn(index); 
-                Row = ComputeRow(Column, index); 
-                Region = SetRegion(Column, Row); 
-            }
+            return other != null && Row == other.Row;
         }
 
-        internal int Row { get; }
-
-        internal int Column { get; }
-
-        internal int Region { get; }
-
-        internal bool IsSameRow(CellIndex uIndex)
+        public bool IsSameColumn(CellIndex other)
         {
-            if (uIndex != null) 
-                return uIndex.Row == Row; 
-            return false; 
+            return other != null && Column == other.Column;
         }
 
-        internal bool IsSameColumn(CellIndex uIndex)
+        public bool IsSameRegion(CellIndex other)
         {
-            if (uIndex != null) 
-                return uIndex.Column == Column; 
-            return false; 
+            return other != null && Region == other.Region;
         }
-
-        internal bool IsSameRegion(CellIndex uIndex)
-        {
-            if (uIndex != null) 
-                return uIndex.Region == Region; 
-            return false;
-        }
-
-        
-        private static int ComputeColumn(int index)
-        {
-            var ret = index%9; 
-            if (ret == 0) 
-                return 8; 
-            return --ret;
-        }
-
-        private static int ComputeRow(int col, int index)
-        {
-            var ret = index/9; 
-            if (col == 8) 
-                return --ret; 
-            return ret; 
-        }
-
-        private static int SetRegion(int col, int row)
-        {
-            if ((0 <= row) && (row <= 2)) 
-            {
-                if ((0 <= col) && (col <= 2)) 
-                    return 0; 
-                if ((3 <= col) && (col <= 5)) 
-                    return 1;
-                return 2;
-            }
-            if ((3 <= row) && (row <= 5)) 
-            {
-                if ((0 <= col) && (col <= 2)) 
-                    return 3; 
-                if ((3 <= col) && (col <= 5))
-                    return 4;
-                return 5;
-            }
-            if ((0 <= col) && (col <= 2)) 
-                return 6;
-            if ((3 <= col) && (col <= 5))
-                return 7;
-            return 8; 
-        }
-
-
-     
     }
-}
+} 

@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using SudokuWPF.Model.Enums;
 using SudokuWPF.Model.Structures;
 using SudokuWPF.ViewModel;
+using System.Diagnostics;
 
 namespace SudokuWPF.Model
 {
@@ -18,33 +19,108 @@ namespace SudokuWPF.Model
         private readonly GameValidator _validator;
         private readonly GameSaveLoad _saveLoad;
         private readonly GameStatistics _statistics;
+        private DifficultyLevels _gameLevel;
+        private readonly Random _random;
+        private readonly List<CellIndex> _selectedCells;
 
-        public GameModel(int[,] puzzle)
+        public DifficultyLevels GameLevel
         {
+            get => _gameLevel;
+            set => _gameLevel = value;
+        }
+
+        public GameModel(CellClass[,] cells)
+        {
+            Debug.WriteLine("\nInitializing GameModel with cells:");
+            PrintBoard(cells);
+
             _cells = new CellClass[9, 9];
             _cellList = new List<CellClass>();
             _regionList = new List<CellClass>[9];
+            for (int i = 0; i < 9; i++)
+            {
+                _regionList[i] = new List<CellClass>();
+            }
             _validator = new GameValidator(_cells, _cellList, _regionList);
             _saveLoad = new GameSaveLoad();
             _statistics = new GameStatistics();
+            _random = new Random();
+            _selectedCells = new List<CellIndex>();
 
-            InitializeCells();
-            if (puzzle != null)
-                LoadPuzzle(puzzle);
+            // Копіюємо клітинки з вхідного масиву
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    _cells[row, col] = new CellClass(col, row);
+                    _cells[row, col].Answer = cells[row, col].Answer;
+                    _cells[row, col].UserAnswer = cells[row, col].UserAnswer;
+                    _cells[row, col].CellState = cells[row, col].CellState;
+                    
+                    Debug.WriteLine($"Copying cell[{row},{col}]: Answer={_cells[row, col].Answer}, State={_cells[row, col].CellState}");
+                    
+                    // Копіюємо нотатки
+                    for (int i = 0; i < 9; i++)
+                    {
+                        _cells[row, col].Notes[i].State = cells[row, col].Notes[i].State;
+                    }
+
+                    _cellList.Add(_cells[row, col]);
+                    _regionList[_cells[row, col].Region].Add(_cells[row, col]);
+                }
+            }
+
+            Debug.WriteLine("\nGameModel initialization complete. Final state:");
+            PrintBoard(_cells);
+
+            // Підраховуємо порожні клітинки
+            CountEmpties();
         }
 
-        private readonly GameValidator _validator;
-
-        internal GameModel(CellClass[,] cells)
+        private void InitializeCells()
         {
-            InitClass(cells); 
-            _validator = new GameValidator(_cells, CellList, _regionList);
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    _cells[i, j] = new CellClass(i, j);
+                    _cells[i, j].Answer = (i * 3 + j) % 9 + 1; // Тестова сітка: числа від 1 до 9
+                    _cells[i, j].UserAnswer = _cells[i, j].Answer;
+                    _cells[i, j].CellState = CellStateEnum.Answer;
+                    _cellList.Add(_cells[i, j]);
+                    _regionList[_cells[i, j].Region].Add(_cells[i, j]);
+                }
+            }
         }
 
-        private CellClass[,] _cells; 
-        private List<CellClass>[] _regionList; 
+        public void LoadPuzzle(int[,] puzzle)
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    if (puzzle[i, j] != 0)
+                    {
+                        _cells[i, j].Answer = puzzle[i, j];
+                        _cells[i, j].CellState = CellStateEnum.Answer;
+                    }
+                }
+            }
+        }
 
-      
+        private int[,] ConvertCellsToIntArray(CellClass[,] cells)
+        {
+            var result = new int[9, 9];
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    result[i, j] = cells[i, j].Answer;
+                }
+            }
+            return result;
+        }
+
         internal CellClass this[int col, int row]
         {
             get
@@ -57,7 +133,7 @@ namespace SudokuWPF.Model
 
         internal bool GameComplete => EmptyCount == 0;
 
-        internal List<CellClass> CellList { get; private set; }
+        internal List<CellClass> CellList => _cellList;
 
         internal int EmptyCount { get; set; }
 
@@ -129,50 +205,6 @@ namespace SudokuWPF.Model
             return _cells;
         }
 
-        private void InitClass(CellClass[,] cells)
-        {
-            if (cells != null) 
-            {
-                _cells = cells; 
-                InitRegionList(); 
-                ConvertToList(); 
-                GenerateAllNotes(); 
-                CountEmpties(); 
-            }
-        }
-
-        private void InitRegionList()
-        {
-            _regionList = new List<CellClass>[9]; 
-            for (var i = 0; i < 9; i++) 
-                _regionList[i] = new List<CellClass>(); 
-        }
-
-        private void ConvertToList()
-        {
-            CellList = new List<CellClass>(_cells.Length);
-            for (var col = 0; col < 9; col++) 
-                for (var row = 0; row < 9; row++) 
-                    AddCell(_cells[col, row]); 
-        }
-
-        private void AddCell(CellClass cell)
-        {
-            if (cell != null) 
-            {
-                CellList.Add(cell); 
-                _regionList[cell.Region].Add(cell); 
-            }
-            else
-                throw new Exception("Cell cannot be null."); 
-        }
-
-        private void GenerateAllNotes()
-        {
-            for (var i = 0; i < CellList.Count; i++) 
-                GenerateNote(CellList[i]); 
-        }
-
         private void GenerateNote(CellClass cell)
         {
             if (cell.CellState != CellStateEnum.Answer) 
@@ -181,8 +213,8 @@ namespace SudokuWPF.Model
                     cell.Notes[i].State = true;
                 for (var i = 0; i < 9; i++) 
                 {
-                    ProcessNote(cell, _cells[cell.Col, i]); 
-                    ProcessNote(cell, _cells[i, cell.Row]); 
+                    ProcessNote(cell, _cells[cell.Row, i]); 
+                    ProcessNote(cell, _cells[i, cell.Col]); 
                 }
                 foreach (var item in _regionList[cell.Region]) 
                     ProcessNote(cell, item);
@@ -235,7 +267,7 @@ namespace SudokuWPF.Model
             await _saveLoad.SaveGameAsync(gameState);
         }
 
-        public async Task<List<SavedGame>> GetSavedGamesAsync()
+        public async Task<List<SavedGameInfo>> GetSavedGamesAsync()
         {
             return await _saveLoad.GetSavedGamesAsync();
         }
@@ -243,7 +275,8 @@ namespace SudokuWPF.Model
         public async Task LoadGameAsync(string fileName)
         {
             var gameState = await _saveLoad.LoadGameAsync(fileName);
-            LoadPuzzle(gameState.Cells);
+            LoadPuzzle(ConvertCellsToIntArray(gameState.Cells));
+            GameLevel = gameState.Difficulty;
         }
 
         public GameStats GetStatistics()
@@ -251,15 +284,161 @@ namespace SudokuWPF.Model
             return _statistics.GetStats();
         }
 
-        private void LoadPuzzle(CellClass[,] cells)
+        public CellClass GetCell(CellIndex index)
         {
-            for (int i = 0; i < 9; i++)
+            return _cells[index.Row, index.Column];
+        }
+
+        public void SetCell(CellIndex index, int value)
+        {
+            if (Common.IsValidAnswer(value))
             {
-                for (int j = 0; j < 9; j++)
+                _cells[index.Row, index.Column].UserAnswer = value;
+            }
+        }
+
+        public void SelectCell(CellIndex index)
+        {
+            if (!_selectedCells.Contains(index))
+            {
+                _selectedCells.Add(index);
+            }
+        }
+
+        public void DeselectCell(CellIndex index)
+        {
+            _selectedCells.Remove(index);
+        }
+
+        public bool IsCellSelected(CellIndex index)
+        {
+            return _selectedCells.Contains(index);
+        }
+
+        public void ClearSelection()
+        {
+            _selectedCells.Clear();
+        }
+
+        public IEnumerable<CellIndex> GetSelectedCells()
+        {
+            return _selectedCells;
+        }
+
+        public bool IsValidMove(CellIndex index, int value)
+        {
+            if (!Common.IsValidAnswer(value))
+                return false;
+
+            // Перевірка рядка
+            for (int row = 0; row < 9; row++)
+            {
+                if (row != index.Row && _cells[row, index.Column].UserAnswer == value)
+                    return false;
+            }
+
+            // Перевірка стовпця
+            for (int col = 0; col < 9; col++)
+            {
+                if (col != index.Column && _cells[index.Row, col].UserAnswer == value)
+                    return false;
+            }
+
+            // Перевірка регіону
+            int regionRow = (index.Row / 3) * 3;
+            int regionCol = (index.Column / 3) * 3;
+            for (int r = regionRow; r < regionRow + 3; r++)
+            {
+                for (int c = regionCol; c < regionCol + 3; c++)
                 {
-                    _cells[i, j] = cells[i, j];
+                    if (r != index.Row && c != index.Column && _cells[r, c].UserAnswer == value)
+                        return false;
                 }
             }
+
+            return true;
+        }
+
+        public bool IsGameComplete()
+        {
+            // Перевіряємо наявність нулів
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    if (_cells[row, col].UserAnswer == 0)
+                        return false;
+                }
+            }
+
+            // Перевіряємо правильність заповнення
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    if (!IsValidMove(new CellIndex(row, col), _cells[row, col].UserAnswer))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        public void ResetGame()
+        {
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    _cells[row, col].UserAnswer = 0;
+                }
+            }
+            ClearSelection();
+        }
+
+        public void PrintUserAnswersToConsole()
+        {
+            System.Diagnostics.Debug.WriteLine("\nПоточний стан поля (UserAnswer):");
+            for (int row = 0; row < 9; row++)
+            {
+                string line = "";
+                for (int col = 0; col < 9; col++)
+                {
+                    line += _cells[row, col].UserAnswer + " ";
+                }
+                System.Diagnostics.Debug.WriteLine(line);
+            }
+            System.Diagnostics.Debug.WriteLine("");
+        }
+
+        public void PrintAnswersToConsole()
+        {
+            System.Diagnostics.Debug.WriteLine("\nПравильні відповіді (Answer):");
+            for (int row = 0; row < 9; row++)
+            {
+                string line = "";
+                for (int col = 0; col < 9; col++)
+                {
+                    line += _cells[row, col].Answer + " ";
+                }
+                System.Diagnostics.Debug.WriteLine(line);
+            }
+            System.Diagnostics.Debug.WriteLine("");
+        }
+
+        private void PrintBoard(CellClass[,] cells)
+        {
+            Debug.WriteLine("\nBoard state:");
+            for (int row = 0; row < 9; row++)
+            {
+                string line = "";
+                for (int col = 0; col < 9; col++)
+                {
+                    line += cells[row, col].Answer + " ";
+                }
+                Debug.WriteLine(line);
+            }
+            Debug.WriteLine("");
         }
     }
 

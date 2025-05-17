@@ -1,20 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using SudokuWPF.Model.Structures;
+using SudokuWPF.Model.Enums;
 
 namespace SudokuWPF.Model
 {
     public class GameSaveLoad
     {
-        private readonly string _saveDirectory;
+        private readonly string _saveDirectory = "saves";
+        private readonly string _savesListFile = "saves.json";
 
         public GameSaveLoad()
         {
-            _saveDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SavedGames");
             if (!Directory.Exists(_saveDirectory))
             {
                 Directory.CreateDirectory(_saveDirectory);
@@ -23,43 +22,52 @@ namespace SudokuWPF.Model
 
         public async Task SaveGameAsync(GameState gameState)
         {
-            var fileName = Path.Combine(_saveDirectory, $"game_{DateTime.Now:yyyyMMdd_HHmmss}.json");
-            var json = JsonConvert.SerializeObject(gameState, Formatting.Indented);
-            await File.WriteAllTextAsync(fileName, json);
+            string fileName = $"game_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+            string filePath = Path.Combine(_saveDirectory, fileName);
+
+            string json = JsonConvert.SerializeObject(gameState);
+            await Task.Run(() => File.WriteAllText(filePath, json));
+
+            var savedGame = new SavedGameInfo
+            {
+                FileName = fileName,
+                SaveDate = DateTime.Now,
+                Difficulty = gameState.Difficulty
+            };
+
+            await UpdateSavesListAsync(savedGame);
         }
 
-        public async Task<List<SavedGame>> GetSavedGamesAsync()
+        public async Task<List<SavedGameInfo>> GetSavedGamesAsync()
         {
-            var files = Directory.GetFiles(_saveDirectory, "game_*.json");
-            var games = new List<SavedGame>();
-
-            foreach (var file in files)
+            string filePath = Path.Combine(_saveDirectory, _savesListFile);
+            if (!File.Exists(filePath))
             {
-                var json = await File.ReadAllTextAsync(file);
-                var gameState = JsonConvert.DeserializeObject<GameState>(json);
-                games.Add(new SavedGame
-                {
-                    FileName = Path.GetFileName(file),
-                    SaveDate = gameState.SaveDate,
-                    Difficulty = gameState.Difficulty
-                });
+                return new List<SavedGameInfo>();
             }
 
-            return games.OrderByDescending(g => g.SaveDate).ToList();
+            string json = await Task.Run(() => File.ReadAllText(filePath));
+            return JsonConvert.DeserializeObject<List<SavedGameInfo>>(json) ?? new List<SavedGameInfo>();
         }
 
         public async Task<GameState> LoadGameAsync(string fileName)
         {
-            var filePath = Path.Combine(_saveDirectory, fileName);
-            var json = await File.ReadAllTextAsync(filePath);
+            string filePath = Path.Combine(_saveDirectory, fileName);
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException("Збережена гра не знайдена", fileName);
+            }
+
+            string json = await Task.Run(() => File.ReadAllText(filePath));
             return JsonConvert.DeserializeObject<GameState>(json);
         }
-    }
 
-    public class SavedGame
-    {
-        public string FileName { get; set; }
-        public DateTime SaveDate { get; set; }
-        public DifficultyLevels Difficulty { get; set; }
+        private async Task UpdateSavesListAsync(SavedGameInfo newSave)
+        {
+            var saves = await GetSavedGamesAsync();
+            saves.Add(newSave);
+            string json = JsonConvert.SerializeObject(saves);
+            await Task.Run(() => File.WriteAllText(Path.Combine(_saveDirectory, _savesListFile), json));
+        }
     }
 } 

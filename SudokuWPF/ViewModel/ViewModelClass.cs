@@ -16,19 +16,13 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
+using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 
 namespace SudokuWPF.ViewModel
 {
     public class ViewModelClass : INotifyPropertyChanged
     {
-        private ViewModelClass()
-        {
-            HintCommand = new RelayCommand(ExecuteHint);
-            SaveGameCommand = new RelayCommand(ExecuteSaveGame);
-            LoadGameCommand = new RelayCommand(ExecuteLoadGame);
-            ShowStatsCommand = new RelayCommand(ExecuteShowStats);
-        }
-
         private static readonly object _lock = new object();
         private static ViewModelClass _instance;
 
@@ -45,6 +39,9 @@ namespace SudokuWPF.ViewModel
         private bool _isShowSolution;
         private bool _isShowNotes;
         private string _gameTimeElapsed;
+        private CellClass _selectedCell;
+        private bool _isGameStarted;
+        private DifficultyLevels _selectedDifficulty;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -493,7 +490,7 @@ namespace SudokuWPF.ViewModel
             GameInProgress = false;
             StartButtonState = StartButtonStateEnum.Disable; 
             EnableGameControls(false, false);
-            _model = new GameModel(null); 
+            _model = new GameModel(CreateEmptyCells());
             LoadSettings(); 
         }
 
@@ -538,67 +535,63 @@ namespace SudokuWPF.ViewModel
 
         private void LoadNewGame()
         {
-            if (GameInProgress)
+            try
             {
-                
-                var iResults = MessageBox.Show("Ви впевнені що хочете почати нову гру?",
-                    "Sudoku", MessageBoxButton.YesNo);
-                if (iResults == MessageBoxResult.Yes) 
+                var cells = _games.GetGame(GameLevel);
+                Debug.WriteLine($"LoadNewGame: Got cells from _games.GetGame({GameLevel})");
+                if (cells != null)
                 {
-                    GameEnded(false);
-                    GetNewGame(); 
+                    Debug.WriteLine("LoadNewGame: Cells are not null, creating new model");
+                    // Створюємо нову модель з отриманими клітинками
+                    _model = new GameModel(cells);
+                    
+                    StartButtonState = StartButtonStateEnum.Start;
+                    StatusMessage = "Готово до початку гри";
+                    _isGameStarted = false;
+                    OnPropertyChanged(nameof(IsGameStarted));
+                    
+                    // Гарантуємо, що сітка буде показана
+                    EnableGameControls(true, true);
+                    UpdateAllCells();
+
+                    // Виводимо початковий стан
+                    _model.PrintAnswersToConsole();
+                    _model.PrintUserAnswersToConsole();
+                }
+                else
+                {
+                    Debug.WriteLine("LoadNewGame: Cells are null!");
+                    StatusMessage = "Помилка: Не вдалося завантажити гру";
+                    EnableGameControls(false, false);
                 }
             }
-            else
+            catch (Exception ex)
             {
+                Debug.WriteLine($"LoadNewGame: Exception occurred: {ex.Message}");
+                StatusMessage = $"Помилка: {ex.Message}";
                 EnableGameControls(false, false);
-                StatusMessage = ""; 
-                ElapsedTime = "";
-                GetNewGame(); 
             }
-        }
-
-        private void GameEnded(bool bShowDialog)
-        {
-            _timer.StopTimer(); 
-            GameInProgress = false; 
-            ElapsedTime = ""; 
-            if (bShowDialog) 
-            {
-                EnableGameControls(false, true);
-                StartButtonState = StartButtonStateEnum.Disable; 
-                StatusMessage = "Puzzle complete!"; 
-                GameTimeElapsed = _timer.ElapsedTime; 
-                _view.ShowGameCompletedDialog();
-            }
-            else
-            {
-                EnableGameControls(false, false); 
-                StartButtonState = StartButtonStateEnum.Start; 
-            }
-        }
-
-        private void GetNewGame()
-        {
-            if (_games.GameCount(GameLevel) > 0) 
-            {
-                _model = new GameModel(_games.GetGame(GameLevel)); 
-                StartButtonState = StartButtonStateEnum.Start; 
-                StatusMessage = " ";
-            }
-            else 
-                StatusMessage = " ";
         }
 
         private void StartGame()
         {
-            if (GameInProgress) 
-                if (StartButtonState == StartButtonStateEnum.Pause) 
-                    PauseGame(); 
-                else
-                    ResumeGame();
+            if (!GameInProgress)
+            {
+                _timer.StartTimer();
+                GameInProgress = true;
+                StartButtonState = StartButtonStateEnum.Pause;
+                EnableGameControls(true, true);
+                StatusMessage = "Гра почалась!";
+                _isGameStarted = true;
+                OnPropertyChanged(nameof(IsGameStarted));
+            }
             else
-                StartNewGame(); 
+            {
+                _timer.StopTimer();
+                GameInProgress = false;
+                StartButtonState = StartButtonStateEnum.Resume;
+                StatusMessage = "Гра на паузі";
+            }
         }
 
         private void PauseGame()
@@ -662,9 +655,9 @@ namespace SudokuWPF.ViewModel
 
         private void UpdateAllCells()
         {
-            if (IsValidGame()) 
-                foreach (var item in _model.CellList)
-                    OnPropertyChanged(item.CellName); 
+            for (int row = 0; row < 9; row++)
+                for (int col = 0; col < 9; col++)
+                    OnPropertyChanged($"Cell{row}{col}");
         }
 
         private void ResetGame()
@@ -682,7 +675,7 @@ namespace SudokuWPF.ViewModel
 
         private void ProcessCellClick(int col, int row)
         {
-            if (IsValidGame() && (_model[col, row].CellState != CellStateEnum.Answer))       
+            if (IsValidGame() && (_model[row, col].CellState != CellStateEnum.Answer))       
                 ProcessNumberPad(col, row, _view.ShowNumberPad()); 
         }
 
@@ -846,7 +839,6 @@ namespace SudokuWPF.ViewModel
         }
 
         private string _errorMessage;
-        private IFormatProvider _timeFormat;
 
         public string ErrorMessage
         {
@@ -858,12 +850,16 @@ namespace SudokuWPF.ViewModel
             }
         }
 
+        public ObservableCollection<CellClass> Cells { get; }
+        public ICommand StartGameCommand { get; }
+        public ICommand CellClickCommand { get; }
+        public ICommand NumberClickCommand { get; }
         public ICommand HintCommand { get; private set; }
         public ICommand SaveGameCommand { get; private set; }
         public ICommand LoadGameCommand { get; private set; }
         public ICommand ShowStatsCommand { get; private set; }
 
-        private void ExecuteHint()
+        private void ExecuteHint(object parameter)
         {
             var hint = _model.GetHint();
             if (hint != null && hint.Any())
@@ -877,7 +873,7 @@ namespace SudokuWPF.ViewModel
             }
         }
 
-        private async void ExecuteSaveGame()
+        private async void ExecuteSaveGame(object parameter)
         {
             try
             {
@@ -890,7 +886,7 @@ namespace SudokuWPF.ViewModel
             }
         }
 
-        private async void ExecuteLoadGame()
+        private async void ExecuteLoadGame(object parameter)
         {
             try
             {
@@ -924,7 +920,7 @@ namespace SudokuWPF.ViewModel
             }
         }
 
-        private void ExecuteShowStats()
+        private void ExecuteShowStats(object parameter)
         {
             var stats = _model.GetStatistics();
             var message = $"Статистика гри:\n\n" +
@@ -935,6 +931,137 @@ namespace SudokuWPF.ViewModel
                          $"Найкращий час (Важкий): {stats.BestTimeHard:hh\\:mm\\:ss}";
 
             MessageBox.Show(message, "Статистика");
+        }
+
+        private void LoadGame(GameState gameState)
+        {
+            _model = new GameModel(gameState.Cells);
+            GameLevel = gameState.Difficulty;
+            ShowBoard();
+            StartGame();
+        }
+
+        public List<CellClass> CellList => _model?.CellList;
+
+        public ViewModelClass()
+        {
+            _model = new GameModel(CreateEmptyCells());
+            Cells = new ObservableCollection<CellClass>();
+            InitializeCells();
+
+            StartGameCommand = new RelayCommand(param => StartGame(), param => CanStartGame());
+            CellClickCommand = new RelayCommand<CellClass>(SelectCell);
+            NumberClickCommand = new RelayCommand<int>(SetNumber);
+            HintCommand = new RelayCommand(ExecuteHint);
+            SaveGameCommand = new RelayCommand(ExecuteSaveGame);
+            LoadGameCommand = new RelayCommand(ExecuteLoadGame);
+            ShowStatsCommand = new RelayCommand(ExecuteShowStats);
+
+            _selectedDifficulty = DifficultyLevels.Easy;
+        }
+
+        private void InitializeCells()
+        {
+            Cells.Clear();
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    Cells.Add(_model.GetCell(new CellIndex(row, col)));
+                }
+            }
+        }
+
+        private bool CanStartGame()
+        {
+            return !_isGameStarted;
+        }
+
+        private void SelectCell(CellClass cell)
+        {
+            if (!_isGameStarted) return;
+
+            _selectedCell = cell;
+            OnPropertyChanged(nameof(SelectedCell));
+        }
+
+        private void SetNumber(int number)
+        {
+            if (!_isGameStarted || _selectedCell == null) return;
+
+            if (_model.IsValidMove(_selectedCell.CellIndex, number))
+            {
+                _model.SetCell(_selectedCell.CellIndex, number);
+                OnPropertyChanged(nameof(Cells));
+
+                // Виводимо стан після встановлення числа
+                _model.PrintUserAnswersToConsole();
+
+                if (_model.IsGameComplete())
+                {
+                    _isGameStarted = false;
+                    OnPropertyChanged(nameof(IsGameStarted));
+                }
+            }
+        }
+
+        public CellClass SelectedCell
+        {
+            get => _selectedCell;
+            set
+            {
+                _selectedCell = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsGameStarted
+        {
+            get => _isGameStarted;
+            set
+            {
+                _isGameStarted = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public DifficultyLevels SelectedDifficulty
+        {
+            get => _selectedDifficulty;
+            set
+            {
+                _selectedDifficulty = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private CellClass[,] CreateEmptyCells()
+        {
+            var cells = new CellClass[9, 9];
+            for (int col = 0; col < 9; col++)
+                for (int row = 0; row < 9; row++)
+                    cells[col, row] = new CellClass(col, row);
+            return cells;
+        }
+
+        private void GameEnded(bool bShowDialog)
+        {
+            _timer.StopTimer(); 
+            GameInProgress = false; 
+            ElapsedTime = ""; 
+            if (bShowDialog) 
+            {
+                EnableGameControls(false, true);
+                StartButtonState = StartButtonStateEnum.Disable; 
+                StatusMessage = "Puzzle complete!"; 
+                GameTimeElapsed = _timer.ElapsedTime; 
+                _view.ShowGameCompletedDialog();
+            }
+            else
+            {
+                EnableGameControls(false, false); 
+                StartButtonState = StartButtonStateEnum.Start; 
+            }
         }
     }
 }

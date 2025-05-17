@@ -6,10 +6,8 @@ using SudokuWPF.Model.Structures;
 
 namespace SudokuWPF.ViewModel
 {
-    internal class Common
+    public static class Common
     {
-       
-
         internal const int MaxLevels = 5;
         internal static bool IsValidIndex(int index)
         {
@@ -29,9 +27,9 @@ namespace SudokuWPF.ViewModel
             return false;
         }
 
-        internal static bool IsValidAnswer(int value)
+        public static bool IsValidAnswer(int value)
         {
-            return (1 <= value) && (value <= 9);
+            return value >= 0 && value <= 9;
         }
 
         internal static bool IsValidStateEnum(object value)
@@ -57,6 +55,19 @@ namespace SudokuWPF.ViewModel
             }
         }
 
-        
+        public static bool IsSameRegion(CellIndex cell1, CellIndex cell2)
+        {
+            return cell1.Region == cell2.Region;
+        }
+
+        public static bool IsSameRow(CellIndex cell1, CellIndex cell2)
+        {
+            return cell1.Row == cell2.Row;
+        }
+
+        public static bool IsSameColumn(CellIndex cell1, CellIndex cell2)
+        {
+            return cell1.Column == cell2.Column;
+        }
     }
 }

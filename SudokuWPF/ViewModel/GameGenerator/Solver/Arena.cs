@@ -6,12 +6,8 @@ namespace SudokuWPF.ViewModel.GameGenerator.Solver
 {
     internal abstract class Arena
     {
-       
-
         private SNode[] _solutionsRows;
         private SColumn[] _headerColumns;
-
-        
 
         internal Arena(int primary, int secondary)
         {
@@ -20,7 +16,7 @@ namespace SudokuWPF.ViewModel.GameGenerator.Solver
             for (var i = 0; i < primary; i++)
             {
                 _solutionsRows[i] = null;
-                _headerColumns[i] = new SColumn(i + 1) {Right = null};
+                _headerColumns[i] = new SColumn(i + 1) { Right = null };
                 if (i > 0)
                 {
                     _headerColumns[i].Left = _headerColumns[i - 1];
@@ -42,15 +38,10 @@ namespace SudokuWPF.ViewModel.GameGenerator.Solver
         {
         }
 
-      
-
         private int Initial { get; set; }
         private SColumn Root { get; set; }
         private int Rows { get; set; }
-        private SColumn FirstColumn => (SColumn) Root.Right;
-
-     
-
+        private SColumn FirstColumn => (SColumn)Root.Right;
 
         internal SNode AddRow(int[] positions)
         {
@@ -123,13 +114,11 @@ namespace SudokuWPF.ViewModel.GameGenerator.Solver
                     Debug.WriteLine($@"  R : {row.ToString()}");
                     row = row.Lower;
                 }
-                col = (SColumn) col.Right;
+                col = (SColumn)col.Right;
             }
         }
 
         internal abstract void HandleSolution(SNode[] rows);
-
-      
 
         private void InitClass(int primary, int secondary)
         {
@@ -182,9 +171,9 @@ namespace SudokuWPF.ViewModel.GameGenerator.Solver
 
         private SColumn NextColumn()
         {
-            var result = (SColumn) Root.Right;
+            var result = (SColumn)Root.Right;
             var minRows = result.Rows;
-            var scanner = (SColumn) Root.Left;
+            var scanner = (SColumn)Root.Left;
             while (Equals(scanner, Root.Right) == false)
             {
                 if (scanner.Rows < minRows)
@@ -192,7 +181,7 @@ namespace SudokuWPF.ViewModel.GameGenerator.Solver
                     result = scanner;
                     minRows = scanner.Rows;
                 }
-                scanner = (SColumn) scanner.Left;
+                scanner = (SColumn)scanner.Left;
             }
             return result;
         }
@@ -200,16 +189,16 @@ namespace SudokuWPF.ViewModel.GameGenerator.Solver
         private void SolveRecurse(int index)
         {
             if (Equals(Root, Root.Right))
-                HandleSolution(_solutionsRows); 
+                HandleSolution(_solutionsRows);
             else
             {
-                var nextCol = NextColumn(); 
-                CoverColumn(nextCol); 
-                var row = nextCol.Lower; 
+                var nextCol = NextColumn();
+                CoverColumn(nextCol);
+                var row = nextCol.Lower;
                 while (Equals(row, nextCol) == false)
                 {
-                    _solutionsRows[index] = row; 
-                    var col = row.Right; 
+                    _solutionsRows[index] = row;
+                    var col = row.Right;
                     while (Equals(col, row) == false)
                     {
                         CoverColumn(col.Header);
@@ -223,13 +212,11 @@ namespace SudokuWPF.ViewModel.GameGenerator.Solver
                         UncoverColumn(col.Header);
                         col = col.Left;
                     }
-                    _solutionsRows[index] = null; 
+                    _solutionsRows[index] = null;
                     row = row.Lower;
                 }
-                UncoverColumn(nextCol); 
+                UncoverColumn(nextCol);
             }
         }
-
-     
     }
 }

@@ -6,48 +6,35 @@ namespace SudokuWPF.Model.Structures
 {
     public class NoteState : INotifyPropertyChanged
     {
-     
+        private readonly string _stateValue;
+        private bool _state;
+
         internal NoteState(int value)
         {
-            if (Common.IsValidAnswer(value)) 
+            if (Common.IsValidAnswer(value))
             {
                 _stateValue = $" {value} ";
-                State = false; 
+                State = false;
             }
             else
-                throw new Exception("Invalid input."); 
+                throw new Exception("Invalid input.");
         }
 
-        protected void OnPropertyChanged(string propertyName)
-        {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-       
-
-        private readonly string _stateValue; 
-        private bool _state; 
-
-       
-
-        public event PropertyChangedEventHandler PropertyChanged; 
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public string Value
         {
             get
             {
-                if (State) 
-                    return _stateValue; 
-                return "   "; 
+                if (State)
+                    return _stateValue;
+                return "   ";
             }
         }
 
-    
         public bool State
         {
-            get { return _state; 
-            }
+            get { return _state; }
             set
             {
                 _state = value;
@@ -55,6 +42,9 @@ namespace SudokuWPF.Model.Structures
             }
         }
 
-        
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

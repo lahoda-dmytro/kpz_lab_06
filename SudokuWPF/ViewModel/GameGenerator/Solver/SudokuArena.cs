@@ -4,10 +4,8 @@ namespace SudokuWPF.ViewModel.GameGenerator.Solver
 {
     internal class SudokuArena : Arena
     {
-      
-
         internal SudokuArena(int[,] puzzle, int boxRows, int boxCols)
-            : base(puzzle.Length*4)
+            : base(puzzle.Length * 4)
         {
             Solutions = 0;
             Size = puzzle.GetLength(0);
@@ -16,15 +14,15 @@ namespace SudokuWPF.ViewModel.GameGenerator.Solver
             for (var row = 0; row < Size; row++)
                 for (var col = 0; col < Size; col++)
                 {
-                    var boxRow = row/boxRows;
-                    var boxCol = col/boxCols;
+                    var boxRow = row / boxRows;
+                    var boxCol = col / boxCols;
                     for (var digit = 0; digit < Size; digit++)
                     {
                         var isGiven = puzzle[row, col] == digit + 1;
-                        positions[0] = 1 + row*Size + col;
-                        positions[1] = 1 + puzzle.Length + row*Size + digit;
-                        positions[2] = 1 + 2*puzzle.Length + col*Size + digit;
-                        positions[3] = 1 + 3*puzzle.Length + (boxRow*boxRows + boxCol)*Size + digit;
+                        positions[0] = 1 + row * Size + col;
+                        positions[1] = 1 + puzzle.Length + row * Size + digit;
+                        positions[2] = 1 + 2 * puzzle.Length + col * Size + digit;
+                        positions[3] = 1 + 3 * puzzle.Length + (boxRow * boxRows + boxCol) * Size + digit;
                         var newRow = AddRow(positions);
                         if (isGiven)
                             known.Add(newRow);
@@ -33,21 +31,12 @@ namespace SudokuWPF.ViewModel.GameGenerator.Solver
             RemoveKnown(known);
         }
 
-       
-
         internal override void HandleSolution(SNode[] rows)
         {
             Solutions++;
         }
 
-       
-
         internal int Solutions { get; private set; }
-
-        
-
         private int Size { get; }
-
-      
     }
 }

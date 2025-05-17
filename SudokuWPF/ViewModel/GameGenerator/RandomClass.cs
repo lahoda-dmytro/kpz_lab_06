@@ -47,30 +47,28 @@ namespace SudokuWPF.ViewModel.GameGenerator
 
         private void InitInstance()
         {
-            if (_rnd == null) 
+            lock (_rndLock) 
             {
-                lock (_rndLock) 
+                if (_rnd == null) 
                 {
-                    if (_rnd == null) 
-                    {
-                        var tsp = new TimeSpan(DateTime.Now.Ticks);
-                        var seed = (int) (tsp.TotalMilliseconds*10000%int.MaxValue%10000);
-                        Debug.WriteLine($@"Random seed = {seed}");
-                        _rnd = new Random(seed);
-                    }
+                    var tsp = new TimeSpan(DateTime.Now.Ticks);
+                    var seed = (int) (tsp.TotalMilliseconds*10000%int.MaxValue%10000);
+                    Debug.WriteLine($@"Random seed = {seed}");
+                    _rnd = new Random(seed);
                 }
             }
         }
 
         private int GetNextInt(int min, int max)
         {
-            if (_rnd == null) 
-                lock (_instance) 
-                {
-                } 
-            lock (_rndLock) 
+            if (_rnd == null)
             {
-                return _rnd.Next(min, max);
+                InitInstance();
+            }
+
+            lock (_rndLock)
+            {
+                return _rnd.Next(min, max); // Random.Next(min, max) вже повертає число в діапазоні [min, max)
             }
         }
 

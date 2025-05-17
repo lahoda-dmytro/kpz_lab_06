@@ -256,51 +256,74 @@
                   IsReadOnly="True"
                   Canvas.Left="430"
                   Canvas.Top="32" />
-        <Label HorizontalAlignment="Left"
+        <Label HorizontalAlignment="Center"
                Height="39"
-               Margin="430,146,0,0"
                VerticalAlignment="Top"
                Width="140"
-               Content="{Binding Path=ElapsedTime, Mode=OneWay}" />
-        <Button Content="Нова гра"
+               Content="{Binding Path=ElapsedTime, Mode=OneWay}" Canvas.Left="430" Canvas.Top="94" />
+        <Button x:Name="StartButton"
+                Style="{StaticResource StartButtonStyle}"
+                Click="btnStart_Click"
+                Canvas.Left="430"
+                Canvas.Top="59" HorizontalAlignment="Center" />
+        <Button x:Name="NewButton"
                 Style="{StaticResource ButtonBaseStyle}"
-                Margin="430,70,0,0"
-                Click="btnNew_Click" />
-        <Button Style="{StaticResource StartButtonStyle}"
-                Margin="430,105,0,0"
-                Click="btnStart_Click" />
-        <Button Content="Почати заново"
+                Content="Нова гра"
+                Click="btnNew_Click"
+                Canvas.Left="430"
+                Canvas.Top="176" HorizontalAlignment="Center" />
+        <Button x:Name="ResetButton"
                 Style="{StaticResource EnableGameButtonStyle}"
-                Margin="430,190,0,0"
-                Click="btnReset_Click" />
+                Content="Скинути"
+                Click="btnReset_Click"
+                Canvas.Left="430"
+                Canvas.Top="211" HorizontalAlignment="Center" />
+        <Button x:Name="SaveButton"
+                Style="{StaticResource EnableGameButtonStyle}"
+                Content="Зберегти гру"
+                Click="SaveButton_Click"
+                Canvas.Left="430"
+                Canvas.Top="247" HorizontalAlignment="Center" />
+        <Button x:Name="LoadButton"
+                Style="{StaticResource ButtonBaseStyle}"
+                Content="Завантажити гру"
+                Click="LoadButton_Click"
+                Canvas.Left="430"
+                Canvas.Top="282" HorizontalAlignment="Center" />
+        <Button x:Name="StatisticsButton"
+                Style="{StaticResource ButtonBaseStyle}"
+                Content="Статистика"
+                Click="StatisticsButton_Click"
+                Canvas.Left="430"
+                Canvas.Top="317" HorizontalAlignment="Center" />
         <Button Content="Закрити гру"
                 Style="{StaticResource ButtonBaseStyle}"
                 Click="btnClose_Click" Canvas.Left="430" Canvas.Top="382" />
         <Button Content="View Game History" HorizontalAlignment="Center" VerticalAlignment="Top" Width="140" Height="30" Click="ViewGameHistoryButton_Click" Canvas.Left="430" Canvas.Top="347" Visibility="Hidden"/>
 
-        <CheckBox Style="{StaticResource CheckboxBaseStyle}"
+        <!--<CheckBox Style="{StaticResource CheckboxBaseStyle}"
           IsChecked="{Binding Path=IsEnterNotes}"
-          Content="Олівець" Canvas.Left="430" Canvas.Top="256" />
-        <CheckBox Style="{StaticResource CheckboxBaseStyle}"
+          Content="Олівець" Canvas.Left="430" Canvas.Top="244" HorizontalAlignment="Center" />-->
+        <!--<CheckBox Style="{StaticResource CheckboxBaseStyle}"
           IsChecked="{Binding Path=IsShowSolution}"
-          Content="Відповіді" Canvas.Left="430" Canvas.Top="282" />
-        <CheckBox Style="{StaticResource CheckboxBaseStyle}"
+          Content="Відповіді" Canvas.Left="430" Canvas.Top="270" HorizontalAlignment="Center" />-->
+        <!--<CheckBox Style="{StaticResource CheckboxBaseStyle}"
           IsChecked="{Binding Path=IsShowNotes}"
-          Content="Підказки" Canvas.Left="430" Canvas.Top="308" />
+          Content="Підказки" Canvas.Left="430" Canvas.Top="296" HorizontalAlignment="Center" />-->
         <TextBlock Text="{Binding Path=ErrorMessage}" Foreground="Red" Canvas.Left="430" Canvas.Top="334" />
 
-        <Button Style="{StaticResource EnableGameButtonStyle}"
+        <!--<Button Style="{StaticResource EnableGameButtonStyle}"
                 Content="Підказка"
-                Command="{Binding HintCommand}" Canvas.Left="430" Canvas.Top="334" />
-        <Button Style="{StaticResource EnableGameButtonStyle}"
+                Command="{Binding HintCommand}" Canvas.Left="430" Canvas.Top="334" />-->
+        <!--<Button Style="{StaticResource EnableGameButtonStyle}"
                 Content="Зберегти гру"
-                Command="{Binding SaveGameCommand}" Canvas.Left="430" Canvas.Top="226" />
+                Command="{Binding SaveGameCommand}" Canvas.Left="430" Canvas.Top="208" HorizontalAlignment="Center" />
         <Button Style="{StaticResource EnableGameButtonStyle}"
                 Content="Завантажити гру"
-                Command="{Binding LoadGameCommand}" Canvas.Left="430" Canvas.Top="299" VerticalAlignment="Center" />
+                Command="{Binding LoadGameCommand}" Canvas.Left="430" Canvas.Top="347" HorizontalAlignment="Center" />
         <Button Style="{StaticResource EnableGameButtonStyle}"
                 Content="Статистика"
-                Command="{Binding ShowStatsCommand}" Canvas.Left="430" Canvas.Top="261" />
+                Command="{Binding ShowStatsCommand}" Canvas.Left="430" Canvas.Top="312" HorizontalAlignment="Center" />-->
 
         <Grid Style="{StaticResource GameGridStyle}">
             <Grid.ColumnDefinitions>
@@ -334,7 +357,7 @@
                 <Rectangle Style="{StaticResource VerticalBars}" Grid.Column="2" />
                 <ContentControl Content="{Binding Path=Cell00, Mode=OneWay}"
                                 ContentTemplate="{StaticResource CellDataTemplate}" Grid.Column="0" Grid.Row="0"
-                                MouseLeftButtonDown="A0_MouseLeftButtonDown" />     
+                                MouseLeftButtonDown="A0_MouseLeftButtonDown" />
                 <ContentControl Content="{Binding Path=Cell10, Mode=OneWay}"
                                 ContentTemplate="{StaticResource CellDataTemplate}" Grid.Column="1" Grid.Row="0"
                                 MouseLeftButtonDown="B0_MouseLeftButtonDown" />

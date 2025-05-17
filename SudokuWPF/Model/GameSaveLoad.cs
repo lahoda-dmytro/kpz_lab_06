@@ -62,6 +62,20 @@ namespace SudokuWPF.Model
             return JsonConvert.DeserializeObject<GameState>(json);
         }
 
+        public async Task DeleteGameAsync(string fileName)
+        {
+            string filePath = Path.Combine(_saveDirectory, fileName);
+            if (File.Exists(filePath))
+            {
+                await Task.Run(() => File.Delete(filePath));
+            }
+
+            var saves = await GetSavedGamesAsync();
+            saves.RemoveAll(s => s.FileName == fileName);
+            string json = JsonConvert.SerializeObject(saves);
+            await Task.Run(() => File.WriteAllText(Path.Combine(_saveDirectory, _savesListFile), json));
+        }
+
         private async Task UpdateSavesListAsync(SavedGameInfo newSave)
         {
             var saves = await GetSavedGamesAsync();

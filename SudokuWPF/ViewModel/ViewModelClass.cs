@@ -693,9 +693,6 @@ namespace SudokuWPF.ViewModel
 
         private void ProcessCellClick(int col, int row)
         {
-            Debug.WriteLine($"UI click: [{col},{row}] CellState={_model[col, row].CellState} UserAnswer={_model[col, row].UserAnswer} Answer={_model[col, row].Answer}");
-            Debug.WriteLine($"Click: [{col},{row}] state={_model[col, row].CellState}");
-            
             if (!IsValidGame())
             {
                 Debug.WriteLine("Game is not valid");
@@ -708,6 +705,11 @@ namespace SudokuWPF.ViewModel
                 return;
             }
 
+            // Спочатку вибираємо клітинку
+            _selectedCell = _model[col, row];
+            OnPropertyChanged(nameof(SelectedCell));
+
+            // Потім відкриваємо інпутпад
             var inputPadState = _view.ShowNumberPad();
             Debug.WriteLine($"Number pad returned: {inputPadState}");
             
@@ -901,16 +903,44 @@ namespace SudokuWPF.ViewModel
 
         private void ExecuteHint(object parameter)
         {
-            var hint = _model.GetHint();
-            if (hint != null && hint.Any())
+            if (_selectedCell == null)
             {
-                var cell = hint.First();
-                MessageBox.Show($"Підказка: спробуйте значення {cell.Notes.Select((n, i) => new { Value = i + 1, IsPossible = n.State }).Where(n => n.IsPossible).Select(n => n.Value).FirstOrDefault()} в клітинці ({cell.Col + 1}, {cell.Row + 1})");
+                MessageBox.Show("Виберіть клітинку для отримання підказки.");
+                return;
+            }
+
+            var possibleValues = GetPossibleValues(_selectedCell);
+            if (possibleValues.Any())
+            {
+                MessageBox.Show($"Можливі значення для цієї клітинки: {string.Join(", ", possibleValues)}");
             }
             else
             {
-                MessageBox.Show("На жаль, підказок немає");
+                MessageBox.Show("Немає можливих значень для цієї клітинки.");
             }
+        }
+
+        private IEnumerable<int> GetPossibleValues(CellClass cell)
+        {
+            var possibleValues = Enumerable.Range(1, 9).ToList();
+
+            // Перевірка рядка
+            for (int col = 0; col < 9; col++)
+            {
+                possibleValues.Remove(_model[cell.CellIndex.Row, col].UserAnswer);
+            }
+
+            // Перевірка стовпця
+       
+
+            // Перевірка регіону
+            var regionCells = _model.RegionCells(cell.Region);
+            foreach (var regionCell in regionCells)
+            {
+                possibleValues.Remove(regionCell.UserAnswer);
+            }
+
+            return possibleValues;
         }
 
         private async void ExecuteSaveGame(object parameter)
@@ -1102,6 +1132,43 @@ namespace SudokuWPF.ViewModel
             {
                 EnableGameControls(false, false); 
                 StartButtonState = StartButtonStateEnum.Start; 
+            }
+        }
+
+        public async Task SaveGameAsync()
+        {
+            if (!GameInProgress)
+            {
+                MessageBox.Show("Немає активної гри для збереження", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                await _model.SaveGameAsync();
+                MessageBox.Show("Гра успішно збережена", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при збереженні гри: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public async Task LoadGameAsync(string fileName)
+        {
+            try
+            {
+                await _model.LoadGameAsync(fileName);
+                GameInProgress = true;
+                ShowBoard();
+                _timer.StartTimer();
+                StartButtonState = StartButtonStateEnum.Pause;
+                EnableGameControls(true, true);
+                UpdateEmptyCount();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при завантаженні гри: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

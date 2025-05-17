@@ -610,5 +610,26 @@ namespace SudokuWPF.View
             GameHistoryWindow historyWindow = new GameHistoryWindow();
             historyWindow.Show();
         }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            var viewModel = ViewModelClass.GetInstance(this);
+            viewModel.SaveGameAsync();
+        }
+
+        private void LoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            var savedGamesWindow = new SavedGamesWindow();
+            if (savedGamesWindow.ShowDialog() == true)
+            {
+                // Гра була завантажена
+            }
+        }
+
+        private void StatisticsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var statisticsWindow = new StatisticsWindow();
+            statisticsWindow.ShowDialog();
+        }
     }
 }

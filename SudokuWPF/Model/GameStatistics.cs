@@ -70,5 +70,18 @@ namespace SudokuWPF.Model
             }
             SaveStats();
         }
+
+        public void ClearStats()
+        {
+            _stats = new GameStats
+            {
+                TotalGames = 0,
+                CompletedGames = 0,
+                BestTimeEasy = TimeSpan.MaxValue,
+                BestTimeMedium = TimeSpan.MaxValue,
+                BestTimeHard = TimeSpan.MaxValue
+            };
+            SaveStats();
+        }
     }
 } 

@@ -5,10 +5,14 @@ D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\bin\Debug\Newtonsoft.Json.dll
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\SudokuWPF.csproj.AssemblyReference.cache
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\GameHistoryWindow.baml
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\InputPad.baml
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\SavedGamesWindow.baml
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\StatisticsWindow.baml
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\GameComplete.g.cs
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\GameHistoryWindow.g.cs
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\InputPad.g.cs
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\MainWindow.g.cs
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\SavedGamesWindow.g.cs
+D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\View\StatisticsWindow.g.cs
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\App.g.cs
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\GeneratedInternalTypeHelper.g.cs
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\obj\Debug\SudokuWPF_MarkupCompile.cache

@@ -69,7 +69,11 @@
             <Button Style="{StaticResource ExtendedButtonStyle}"
           
           Click="ClearButton_Click"
-          Content="Стерти" Height="30" Width="100" HorizontalAlignment="Left" Margin="16,-5,0,5" Grid.ColumnSpan="3" />
+          Content="Стерти" Height="30" Width="100" HorizontalAlignment="Left" Margin="16,-7,0,12" Grid.ColumnSpan="3" />
+
+            <Button Style="{StaticResource ExtendedButtonStyle}"
+          Click="HintButton_Click"
+          Content="Підказка" Height="30" Width="100" HorizontalAlignment="Left" Margin="16,23,0,-18" Grid.ColumnSpan="3" />
 
         </Grid>
 

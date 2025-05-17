@@ -102,6 +102,11 @@ namespace SudokuWPF.View
             SaveState(InputPadStateEnum.ClearRaised);
         }
 
+        private void HintButton_Click(object sender, RoutedEventArgs e)
+        {
+            SaveState(InputPadStateEnum.HintRaised);
+        }
+
         
     }
 }

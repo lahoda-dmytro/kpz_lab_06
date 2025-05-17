@@ -10,11 +10,11 @@ none
 false
 DEBUG;TRACE
 D:\!01 labs\!02 course\kpz_lab\lab6\SudokuWPF\App.xaml
-41246500827
+61859640416
 
-42-417820126
+44-1305498971
 151041471165
-View\GameComplete.xaml;View\GameHistoryWindow.xaml;View\InputPad.xaml;View\MainWindow.xaml;
+View\GameComplete.xaml;View\GameHistoryWindow.xaml;View\InputPad.xaml;View\MainWindow.xaml;View\SavedGamesWindow.xaml;View\StatisticsWindow.xaml;
 
 False
 
